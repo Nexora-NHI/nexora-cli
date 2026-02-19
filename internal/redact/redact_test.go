@@ -33,6 +33,35 @@ func TestHasSecret(t *testing.T) {
 	assert.False(t, HasSecret("no secrets here"))
 }
 
+func TestRedactAWSSecretKey(t *testing.T) {
+	input := `aws_secret_access_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"`
+	out := String(input)
+	assert.Contains(t, out, "[REDACTED:AWS_SECRET_KEY]")
+	assert.Contains(t, out, "aws_secret_access_key")
+	assert.NotContains(t, out, "wJalrXUtnFEMI/K7MDENG")
+}
+
+func TestRedactFinegrainedPAT(t *testing.T) {
+	pat := "github_pat_" + repeat("A", 82)
+	out := String("token: " + pat)
+	assert.Contains(t, out, "[REDACTED:GH_FINE_GRAINED_PAT]")
+	assert.NotContains(t, out, pat)
+}
+
+func TestRedactBytes(t *testing.T) {
+	input := []byte("key: AKIAIOSFODNN7EXAMPLE")
+	out := Bytes(input)
+	assert.Contains(t, string(out), "[REDACTED:AWS_ACCESS_KEY_ID]")
+}
+
+func TestHasSecret_PEM(t *testing.T) {
+	assert.True(t, HasSecret("-----BEGIN RSA PRIVATE KEY-----"))
+}
+
+func TestHasSecret_GHToken(t *testing.T) {
+	assert.True(t, HasSecret("ghp_"+repeat("Z", 36)))
+}
+
 func repeat(s string, n int) string {
 	out := make([]byte, n)
 	for i := range out {

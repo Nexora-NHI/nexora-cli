@@ -59,3 +59,45 @@ func TestCheckIAMTrustPolicyTooBroad_SpecificPrincipal_NoFinding(t *testing.T) {
 	require.NoError(t, err)
 	assert.Empty(t, findings)
 }
+
+func TestCheckResourceWildcardWithBroadActions_Triggers(t *testing.T) {
+	data := []byte(`{
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": "s3:*",
+    "Resource": "*"
+  }]
+}`)
+	findings, err := CheckResourceWildcardWithBroadActions(data, "policy.json")
+	require.NoError(t, err)
+	assert.True(t, len(findings) > 0)
+	assert.Equal(t, "NXR-IAC-004", findings[0].RuleID)
+}
+
+func TestCheckResourceWildcardWithBroadActions_ScopedResource_NoFinding(t *testing.T) {
+	data := []byte(`{
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": ["s3:GetObject"],
+    "Resource": "arn:aws:s3:::my-bucket/*"
+  }]
+}`)
+	findings, err := CheckResourceWildcardWithBroadActions(data, "policy.json")
+	require.NoError(t, err)
+	assert.Empty(t, findings)
+}
+
+func TestCheckHardcodedCredentials_NoCredentials_NoFinding(t *testing.T) {
+	data := []byte(`resource "aws_iam_role" "example" { name = "my-role" }`)
+	findings, err := CheckHardcodedCredentials(data, "main.tf")
+	require.NoError(t, err)
+	assert.Empty(t, findings)
+}
+
+func TestCheckIAMWildcardAction_HCLAssignment(t *testing.T) {
+	data := []byte(`Action = "*"`)
+	findings, err := CheckIAMWildcardAction(data, "main.tf")
+	require.NoError(t, err)
+	assert.True(t, len(findings) > 0)
+	assert.Equal(t, "NXR-IAC-001", findings[0].RuleID)
+}
