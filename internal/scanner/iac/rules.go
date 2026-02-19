@@ -11,13 +11,12 @@ import (
 
 var (
 	reAWSAccessKeyID  = regexp.MustCompile(`AKIA[0-9A-Z]{16}`)
-	reAWSSecretKey    = regexp.MustCompile(`(?i)aws_secret_access_key\s*=\s*"([A-Za-z0-9/+=]{40})"`)
+	reAWSSecretKey    = regexp.MustCompile(`(?i)aws_secret_access_key\s*=\s*"?[A-Za-z0-9/+=]{40}"?`)
 	reIAMAction       = regexp.MustCompile(`(?i)"Action"\s*:\s*(\[[\s\S]*?\]|"[^"]*")`)
 	reIAMActionHCL    = regexp.MustCompile(`(?i)actions\s*=\s*\[([^\]]*)\]`)
 	reIAMPrincipal    = regexp.MustCompile(`(?i)"Principal"\s*:\s*"(\*)"`)
 	reIAMResource     = regexp.MustCompile(`(?i)"Resource"\s*:\s*"(\*)"`)
 	reServiceWildcard = regexp.MustCompile(`"[a-z0-9]+:\*"`)
-	reHCLWildcard     = regexp.MustCompile(`"[a-z0-9]+:\*"`)
 )
 
 var serviceWildcards = []string{"iam:*", "sts:*", "s3:*", "ec2:*", "lambda:*", "kms:*"}
@@ -174,7 +173,7 @@ func matchesWildcardAction(line string) bool {
 			return true
 		}
 	}
-	if reServiceWildcard.MatchString(line) || reHCLWildcard.MatchString(line) {
+	if reServiceWildcard.MatchString(line) {
 		return true
 	}
 	if reIAMActionHCL.MatchString(line) {
