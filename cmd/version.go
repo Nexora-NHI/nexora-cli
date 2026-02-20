@@ -3,8 +3,9 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/Nexora-Inc-AFNOOR-LLC-DBA-NEXORA-INC/nexora-cli/internal/version"
 	"github.com/spf13/cobra"
+
+	"github.com/Nexora-Inc-AFNOOR-LLC-DBA-NEXORA-INC/nexora-cli/internal/version"
 )
 
 var versionCmd = &cobra.Command{
