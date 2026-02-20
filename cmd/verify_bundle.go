@@ -22,7 +22,7 @@ Example:
 		dir := args[0]
 		results, err := bundle.Verify(dir)
 		if err != nil {
-			fmt.Fprintf(cmd.ErrOrStderr(), "ERROR: %v\n", err)
+			_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "ERROR: %v\n", err)
 			os.Exit(2)
 		}
 
@@ -34,18 +34,18 @@ Example:
 				allPassed = false
 			}
 			if r.Passed {
-				fmt.Fprintf(cmd.OutOrStdout(), "[%s] %s\n", status, r.File)
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "[%s] %s\n", status, r.File)
 			} else {
-				fmt.Fprintf(cmd.OutOrStdout(), "[%s] %s — %s\n", status, r.File, r.Reason)
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "[%s] %s — %s\n", status, r.File, r.Reason)
 			}
 		}
 
 		if !allPassed {
-			fmt.Fprintln(cmd.ErrOrStderr(), "\nBundle verification FAILED: one or more files have been modified.")
+			_, _ = fmt.Fprintln(cmd.ErrOrStderr(), "\nBundle verification FAILED: one or more files have been modified.")
 			os.Exit(1)
 		}
 
-		fmt.Fprintln(cmd.OutOrStdout(), "\nBundle verification PASSED.")
+		_, _ = fmt.Fprintln(cmd.OutOrStdout(), "\nBundle verification PASSED.")
 		return nil
 	},
 }

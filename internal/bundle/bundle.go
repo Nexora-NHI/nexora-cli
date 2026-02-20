@@ -11,9 +11,9 @@ import (
 	"sort"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/Nexora-Inc-AFNOOR-LLC-DBA-NEXORA-INC/nexora-cli/internal/finding"
 	"github.com/Nexora-Inc-AFNOOR-LLC-DBA-NEXORA-INC/nexora-cli/internal/output"
+	"github.com/google/uuid"
 )
 
 type FileEntry struct {
@@ -52,7 +52,7 @@ func Write(dir, scanID, version string, findings []finding.Finding) error {
 			if err != nil {
 				return err
 			}
-			defer f.Close()
+			defer func() { _ = f.Close() }()
 			return output.WriteJSON(f, scanID, version, findings)
 		},
 		"findings.sarif": func() error {
@@ -60,7 +60,7 @@ func Write(dir, scanID, version string, findings []finding.Finding) error {
 			if err != nil {
 				return err
 			}
-			defer f.Close()
+			defer func() { _ = f.Close() }()
 			return output.WriteSARIF(f, version, findings)
 		},
 		"findings.ocsf.jsonl": func() error {
@@ -68,7 +68,7 @@ func Write(dir, scanID, version string, findings []finding.Finding) error {
 			if err != nil {
 				return err
 			}
-			defer f.Close()
+			defer func() { _ = f.Close() }()
 			return output.WriteOCSF(f, version, findings)
 		},
 		"scan-metadata.json": func() error {
@@ -82,7 +82,7 @@ func Write(dir, scanID, version string, findings []finding.Finding) error {
 			if err != nil {
 				return err
 			}
-			defer f.Close()
+			defer func() { _ = f.Close() }()
 			enc := json.NewEncoder(f)
 			enc.SetIndent("", "  ")
 			return enc.Encode(meta)
@@ -117,7 +117,7 @@ func Write(dir, scanID, version string, findings []finding.Finding) error {
 	if err != nil {
 		return fmt.Errorf("create manifest.json: %w", err)
 	}
-	defer mf.Close()
+	defer func() { _ = mf.Close() }()
 
 	enc := json.NewEncoder(mf)
 	enc.SetIndent("", "  ")
