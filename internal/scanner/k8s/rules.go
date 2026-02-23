@@ -77,7 +77,7 @@ func CheckAutomountServiceAccountToken(doc *yaml.Node, filePath string) ([]findi
 		}
 		f := finding.Finding{
 			RuleID:      "NXR-K8S-002",
-			Severity:    finding.SeverityInfo,
+			Severity:    finding.SeverityLow,
 			Title:       "ServiceAccount token automount not explicitly disabled",
 			Description: fmt.Sprintf("ServiceAccount %q does not set automountServiceAccountToken: false.", name),
 			NHIContext:  "Automatically mounted tokens grant API access to any process using this SA; disable if not needed.",
@@ -125,7 +125,7 @@ func CheckAutomountServiceAccountToken(doc *yaml.Node, filePath string) ([]findi
 	name := scalarValue(mappingValue(root, "metadata"), "name")
 	f := finding.Finding{
 		RuleID:      "NXR-K8S-002",
-		Severity:    finding.SeverityInfo,
+		Severity:    finding.SeverityLow,
 		Title:       "ServiceAccount token automount not explicitly disabled",
 		Description: fmt.Sprintf("%s %q uses SA %q but does not set automountServiceAccountToken: false.", kind, name, saNode.Value),
 		NHIContext:  "Automatically mounted tokens grant API access to any process in the pod; disable if not needed.",

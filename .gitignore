@@ -5,6 +5,7 @@ dist/
 
 # Test artifacts
 coverage.out
+coverage
 *.test
 cmd/scan-*/
 

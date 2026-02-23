@@ -26,9 +26,9 @@ type Finding struct {
 func (f *Finding) ComputeFingerprint() {
 	normalized := filepath.ToSlash(strings.ToLower(f.FilePath))
 	evidenceKey := strings.SplitN(f.Evidence, ":", 2)[0]
-	raw := fmt.Sprintf("%s|%s|%s", f.RuleID, normalized, evidenceKey)
+	raw := fmt.Sprintf("%s|%s|%s|%d", f.RuleID, normalized, evidenceKey, f.LineStart)
 	sum := sha256.Sum256([]byte(raw))
-	f.Fingerprint = fmt.Sprintf("%x", sum[:8])
+	f.Fingerprint = fmt.Sprintf("%x", sum[:16])
 }
 
 func Sort(findings []Finding) {

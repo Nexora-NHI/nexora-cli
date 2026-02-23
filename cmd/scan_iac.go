@@ -43,7 +43,7 @@ var scanIaCCmd = &cobra.Command{
 		finding.Sort(findings)
 		filtered := finding.Filter(findings, iacThreshold)
 
-		if err := writeFindings(cmd, filtered, iacFormat, iacOutput, ""); err != nil {
+		if err := writeFindings(cmd, filtered, iacFormat, iacOutput, "", ""); err != nil {
 			return err
 		}
 

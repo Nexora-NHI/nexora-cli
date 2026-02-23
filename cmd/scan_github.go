@@ -40,11 +40,15 @@ This is the ONLY command that makes network calls.`,
 		if ghOrg == "" && ghRepo == "" {
 			return fmt.Errorf("--org or --repo is required")
 		}
+		tokenFromFlag := ghToken != ""
 		if ghToken == "" {
 			ghToken = os.Getenv("GITHUB_TOKEN")
 		}
 		if ghToken == "" {
 			return fmt.Errorf("GitHub token required: use --token or set GITHUB_TOKEN")
+		}
+		if tokenFromFlag {
+			log.Warn().Msg("--token flag exposes the token in process list and shell history; prefer GITHUB_TOKEN env var")
 		}
 		sev, err := parseSeverityFlag(ghSeverity)
 		if err != nil {
@@ -135,7 +139,7 @@ This is the ONLY command that makes network calls.`,
 		finding.Sort(allFindings)
 		filtered := finding.Filter(allFindings, ghThreshold)
 
-		if err := writeFindings(cmd, filtered, ghFormat, ghOutput, ghBundle); err != nil {
+		if err := writeFindings(cmd, filtered, ghFormat, ghOutput, ghBundle, ""); err != nil {
 			return err
 		}
 

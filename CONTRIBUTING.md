@@ -12,8 +12,9 @@ make test
 ## Development Requirements
 
 - Go 1.22+
-- golangci-lint v1.57.2
-- gosec v2.19.0
+- golangci-lint v2.10.1
+- gosec v2.21.4
+- govulncheck v1.1.4
 
 ## Pull Request Guidelines
 

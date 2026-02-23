@@ -20,8 +20,12 @@ const (
 	colorBold   = "\033[1m"
 )
 
-func isTerminal() bool {
-	fi, err := os.Stdout.Stat()
+func isTerminalWriter(w io.Writer) bool {
+	f, ok := w.(*os.File)
+	if !ok {
+		return false
+	}
+	fi, err := f.Stat()
 	if err != nil {
 		return false
 	}
@@ -44,7 +48,7 @@ func severityColor(s finding.Severity) string {
 }
 
 func WriteTable(w io.Writer, findings []finding.Finding) error {
-	color := isTerminal()
+	color := isTerminalWriter(w)
 
 	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
 	_, _ = fmt.Fprintln(tw, "SEVERITY\tRULE ID\tFILE\tLINE\tTITLE")

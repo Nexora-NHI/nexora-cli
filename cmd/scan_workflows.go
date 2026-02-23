@@ -49,7 +49,7 @@ For scanning a live GitHub organisation via the API, use: nexora scan github`,
 		finding.Sort(findings)
 		filtered := finding.Filter(findings, wfThreshold)
 
-		if err := writeFindings(cmd, filtered, wfFormat, wfOutput, wfBundle); err != nil {
+		if err := writeFindings(cmd, filtered, wfFormat, wfOutput, wfBundle, ""); err != nil {
 			return err
 		}
 

@@ -121,8 +121,7 @@ func isWorkflowFile(path string) bool {
 	if !strings.HasSuffix(normalized, ".yml") && !strings.HasSuffix(normalized, ".yaml") {
 		return false
 	}
-	return strings.Contains(normalized, ".github/workflows/") ||
-		strings.Contains(normalized, ".github\\workflows\\")
+	return strings.Contains(normalized, ".github/workflows/")
 }
 
 func checkNodeLimits(node *yaml.Node) bool {

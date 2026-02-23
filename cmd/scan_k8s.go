@@ -43,7 +43,7 @@ var scanK8sCmd = &cobra.Command{
 		finding.Sort(findings)
 		filtered := finding.Filter(findings, k8sThreshold)
 
-		if err := writeFindings(cmd, filtered, k8sFormat, k8sOutput, ""); err != nil {
+		if err := writeFindings(cmd, filtered, k8sFormat, k8sOutput, "", ""); err != nil {
 			return err
 		}
 

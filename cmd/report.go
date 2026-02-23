@@ -61,7 +61,7 @@ Example:
 			findings = finding.Filter(findings, threshold)
 		}
 
-		return writeFindings(cmd, findings, reportFormat, reportOutput, reportBundle)
+		return writeFindings(cmd, findings, reportFormat, reportOutput, reportBundle, jsonReport.ScanID)
 	},
 }
 
@@ -74,8 +74,10 @@ func init() {
 	reportCmd.Flags().StringVar(&reportSeverity, "severity", "", "filter to minimum severity: info|low|medium|high|critical")
 }
 
-func writeFindings(cmd *cobra.Command, findings []finding.Finding, format, outputPath, bundlePath string) error {
-	scanID := uuid.New().String()
+func writeFindings(cmd *cobra.Command, findings []finding.Finding, format, outputPath, bundlePath, scanID string) error {
+	if scanID == "" {
+		scanID = uuid.New().String()
+	}
 
 	if bundlePath != "" {
 		return bundle.Write(bundlePath, scanID, version.Version, findings)

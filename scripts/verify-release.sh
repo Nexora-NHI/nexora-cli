@@ -25,7 +25,7 @@ echo "==> Verifying cosign signature on checksums.txt..."
 cosign verify-blob \
   --certificate checksums.txt.pem \
   --signature checksums.txt.sig \
-  --certificate-identity-regexp "https://github.com/${REPO}" \
+  --certificate-identity-regexp "^https://github.com/${REPO}/" \
   --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
   checksums.txt
 

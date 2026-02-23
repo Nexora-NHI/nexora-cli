@@ -67,7 +67,7 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Install nexora-cli
         run: |
           curl -sSfL https://github.com/Nexora-Inc-AFNOOR-LLC-DBA-NEXORA-INC/nexora-cli/releases/latest/download/nexora_Linux_x86_64.tar.gz | tar xz
