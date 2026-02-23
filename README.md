@@ -2,21 +2,23 @@
 
 ![demo](demo.gif)
 
-**Open-source, read-only NHI (Non-Human Identity) risk scanner** by [Nexora](https://nexora.inc).
+Open-source CLI that finds Non-Human Identity (NHI) risks in GitHub Actions workflows, Kubernetes manifests, and Terraform/IaC files — before they become incidents.
 
-Scans GitHub Actions workflows, Kubernetes manifests, and IaC files for machine identity risk patterns. Produces structured findings in table, JSON, SARIF 2.1.0, and OCSF 1.1.0 formats.
+Built by [Nexora](https://nexora.inc). MIT licensed. No telemetry. No SaaS. Runs entirely on your machine.
 
-## Key Properties
+---
 
-- **Read-only** — never writes to scanned targets
-- **No network calls** for file-based scans (workflows/k8s/iac)
-- **No telemetry** — zero data transmitted anywhere
-- **No Nexora API** — fully self-contained open-source tool
-- **Single binary** — CGO_ENABLED=0, cross-platform
+## Why this exists
 
-## Installation
+Most breaches involving service accounts, CI tokens, and machine credentials trace back to the same handful of misconfigurations — unpinned actions, cluster-admin bindings, hardcoded secrets, wildcard IAM policies. These patterns are detectable statically. nexora-cli does exactly that.
 
-### Pre-built binary (macOS/Linux)
+It does not call home. It does not require an account. It reads files and tells you what it finds.
+
+---
+
+## Install
+
+**macOS / Linux — pre-built binary**
 
 ```sh
 curl -sSfL https://github.com/Nexora-Inc-AFNOOR-LLC-DBA-NEXORA-INC/nexora-cli/releases/latest/download/nexora_$(uname -s)_$(uname -m).tar.gz | tar xz
@@ -24,13 +26,13 @@ sudo mv nexora /usr/local/bin/
 nexora version
 ```
 
-### Go install
+**Go install**
 
 ```sh
 go install github.com/Nexora-Inc-AFNOOR-LLC-DBA-NEXORA-INC/nexora-cli@latest
 ```
 
-### From source
+**Build from source**
 
 ```sh
 git clone https://github.com/Nexora-Inc-AFNOOR-LLC-DBA-NEXORA-INC/nexora-cli.git
@@ -38,113 +40,152 @@ cd nexora-cli
 make build
 ```
 
-## Quick Start
+---
+
+## Usage
 
 ```sh
-# Scan local GitHub Actions workflow files (no token required)
+# Scan GitHub Actions workflows in your repo (no token needed)
 nexora scan workflows --path ./.github/workflows/
 
 # Scan Kubernetes manifests
 nexora scan k8s --path ./k8s/
 
-# Scan IaC (Terraform, CloudFormation)
+# Scan Terraform / IaC files
 nexora scan iac --path ./terraform/
 
-# Scan GitHub org via API (requires token)
-nexora scan github --org my-org --token $GITHUB_TOKEN
+# Scan a GitHub org via API (token required)
+export GITHUB_TOKEN=ghp_...
+nexora scan github --org my-org
 
-# Output as SARIF
+# Get SARIF output for GitHub Code Scanning
 nexora scan k8s --path ./k8s/ --format sarif --output findings.sarif
 
-# Generate evidence bundle directly from scan
+# Generate a tamper-evident evidence bundle
 nexora scan k8s --path ./k8s/ --format json --output findings.json
-nexora report --input findings.json --bundle ./evidence-bundle/
-
-# Verify bundle integrity
-nexora verify bundle ./evidence-bundle/
+nexora report --input findings.json --bundle ./bundle/
+nexora verify bundle ./bundle/
 ```
 
-## Exit Codes
+---
 
-| Code | Meaning |
-|------|---------|
-| `0`  | Scan complete, zero findings at or above `--severity` threshold |
-| `1`  | Scan complete, findings exist at or above threshold |
-| `2`  | Execution error (invalid flags, cannot read path, output write failure) |
+## Exit codes
 
-## Detection Rules
+| Code | What it means |
+|------|---------------|
+| `0` | Scan finished, nothing found at or above the severity threshold |
+| `1` | Scan finished, findings exist at or above the threshold |
+| `2` | Something went wrong — bad flags, unreadable path, write failure |
 
-### GitHub Actions
+CI pipelines can use exit code `1` to fail a build on findings.
 
-| Rule ID | Severity | Description |
-|---------|----------|-------------|
-| NXR-GH-001 | HIGH | Broad workflow-level write permissions without job scoping |
-| NXR-GH-002 | HIGH | Action not pinned to commit SHA |
-| NXR-GH-003 | CRITICAL | pull_request_target with PR-head checkout |
-| NXR-GH-004 | CRITICAL | Hardcoded credential in workflow env/with/run blocks |
-| NXR-GH-005 | MEDIUM | Self-hosted runner without restriction labels |
-| NXR-GH-006 | HIGH | Token exposure risk in pull_request_target |
-| NXR-GH-007 | MEDIUM | Untrusted GitHub event body/title used in run step |
+---
+
+## What it detects
+
+### GitHub Actions — 8 rules
+
+| Rule | Severity | What it catches |
+|------|----------|-----------------|
+| NXR-GH-001 | HIGH | Workflow-level write permissions with no job-level scoping |
+| NXR-GH-002 | HIGH | Action pinned to a tag or branch instead of a commit SHA |
+| NXR-GH-003 | CRITICAL | `pull_request_target` with checkout of PR head code |
+| NXR-GH-004 | CRITICAL | Hardcoded credential in `env`, `with`, or `run` blocks |
+| NXR-GH-005 | MEDIUM | Self-hosted runner with no label restrictions |
+| NXR-GH-006 | HIGH | Token exposed via `pull_request_target` context |
+| NXR-GH-007 | MEDIUM | Untrusted PR title or body used directly in a `run` step |
 | NXR-GH-008 | MEDIUM | Scheduled workflow with write permissions |
 
-### Kubernetes
+### Kubernetes — 5 rules
 
-| Rule ID | Severity | Description |
-|---------|----------|-------------|
-| NXR-K8S-001 | CRITICAL | ServiceAccount bound to cluster-admin |
-| NXR-K8S-002 | LOW | ServiceAccount token automount not explicitly disabled |
-| NXR-K8S-003 | LOW | Default ServiceAccount used in non-system namespace |
-| NXR-K8S-004 | HIGH | Wildcard RBAC verbs on sensitive resources |
-| NXR-K8S-005 | LOW | Projected ServiceAccountToken expirationSeconds too long |
+| Rule | Severity | What it catches |
+|------|----------|-----------------|
+| NXR-K8S-001 | CRITICAL | ServiceAccount bound to `cluster-admin` |
+| NXR-K8S-002 | LOW | `automountServiceAccountToken` not explicitly disabled |
+| NXR-K8S-003 | LOW | Default ServiceAccount used in a non-system namespace |
+| NXR-K8S-004 | HIGH | Wildcard verbs on sensitive RBAC resources |
+| NXR-K8S-005 | LOW | Projected ServiceAccountToken with a long expiry |
 
-### IaC
+### IaC / Terraform — 4 rules
 
-| Rule ID | Severity | Description |
-|---------|----------|-------------|
-| NXR-IAC-001 | CRITICAL | IAM wildcard action or service wildcard |
-| NXR-IAC-002 | CRITICAL | Hardcoded credentials in IaC |
-| NXR-IAC-003 | HIGH | IAM trust policy too broad — wildcard principal |
-| NXR-IAC-004 | HIGH | Resource '*' with data-plane service wildcards |
+| Rule | Severity | What it catches |
+|------|----------|-----------------|
+| NXR-IAC-001 | CRITICAL | IAM wildcard action (`"*"`) — single line or multi-line block |
+| NXR-IAC-002 | CRITICAL | Hardcoded AWS credentials in config files |
+| NXR-IAC-003 | HIGH | IAM trust policy with a wildcard principal |
+| NXR-IAC-004 | HIGH | Resource `"*"` combined with data-plane service wildcards |
 
-## Output Formats
+---
 
-- `table` — human-readable tabular output (default)
-- `json` — structured JSON with scan metadata
-- `sarif` — SARIF 2.1.0 (GitHub Code Scanning compatible)
-- `ocsf` — OCSF 1.1.0 Security Finding JSONL
+## Output formats
 
-## Evidence Bundles
+| Flag | Format | Use case |
+|------|--------|----------|
+| `--format table` | Terminal table with color | Default, local review |
+| `--format json` | Structured JSON | Pipelines, custom tooling |
+| `--format sarif` | SARIF 2.1.0 | GitHub Code Scanning, VS Code |
+| `--format ocsf` | OCSF 1.1.0 JSONL | AWS Security Lake, Splunk |
+
+---
+
+## Evidence bundles
+
+If you need to hand findings to a compliance team or auditor, generate a bundle:
 
 ```sh
 nexora report --input findings.json --bundle ./bundle/
 nexora verify bundle ./bundle/
 ```
 
-Bundles contain `findings.json`, `findings.sarif`, `findings.ocsf.jsonl`, `scan-metadata.json`, and `manifest.json` with SHA-256 + SHA-512 per file and a root hash.
+The bundle contains `findings.json`, `findings.sarif`, `findings.ocsf.jsonl`, `scan-metadata.json`, and a `manifest.json` with SHA-256 and SHA-512 checksums per file plus a root hash. The verify command checks all of them.
 
-## GitHub Actions Integration
+---
+
+## Drop it into GitHub Actions
 
 ```yaml
-- name: Scan workflows (local, no token)
-  run: nexora scan workflows --path ./.github/workflows/ --format sarif --output workflows.sarif
+jobs:
+  nhi-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-- name: Scan Kubernetes manifests
-  run: nexora scan k8s --path ./k8s/ --format sarif --output k8s.sarif
+      - name: Install nexora-cli
+        run: |
+          curl -sSfL https://github.com/Nexora-Inc-AFNOOR-LLC-DBA-NEXORA-INC/nexora-cli/releases/latest/download/nexora_Linux_x86_64.tar.gz | tar xz
+          sudo mv nexora /usr/local/bin/
 
-- name: Upload SARIF
-  uses: github/codeql-action/upload-sarif@60168efe1c415ce0f5521ea06d5c2062adbeed1b # v3
-  with:
-    sarif_file: workflows.sarif
+      - name: Scan workflows
+        run: nexora scan workflows --path ./.github/workflows/ --format sarif --output workflows.sarif
+
+      - name: Scan Kubernetes
+        run: nexora scan k8s --path ./k8s/ --format sarif --output k8s.sarif
+
+      - name: Upload to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@60168efe1c415ce0f5521ea06d5c2062adbeed1b # v3
+        with:
+          sarif_file: workflows.sarif
 ```
 
-## Development
+Findings show up as PR annotations in GitHub Code Scanning automatically.
+
+---
+
+## Contributing
 
 ```sh
-make test      # run tests with race detector
+make test      # tests with race detector
 make lint      # golangci-lint
 make security  # gosec + govulncheck
 make build     # build binary
 ```
+
+All new rules need a unit test and fixtures in `fixtures/vulnerable/` and `fixtures/clean/`. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
 
 ## License
 
