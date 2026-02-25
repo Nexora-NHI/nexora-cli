@@ -8,7 +8,10 @@
 
 ## Reporting a Vulnerability
 
-Report security vulnerabilities to **security@nexora.inc**.
+Use one of two channels:
+
+1. **GitHub private vulnerability reporting** — [Report a vulnerability](https://github.com/Nexora-NHI/nexora-cli/security/advisories/new) (preferred — keeps disclosure coordinated)
+2. **Email** — security@nexora.inc
 
 Do **not** open a public GitHub issue for security vulnerabilities.
 
