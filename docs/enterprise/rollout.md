@@ -56,7 +56,7 @@ nexora version
 Verify before deploying to production:
 
 ```bash
-./scripts/verify-release.sh v0.1.0 nexora_0.1.0_linux_amd64.tar.gz
+./scripts/verify-release.sh v0.1.0 nexora-cli_v0.1.0_linux_amd64.tar.gz
 ```
 
 ---
