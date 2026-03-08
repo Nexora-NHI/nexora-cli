@@ -9,6 +9,8 @@
 
 ![demo](demo.gif)
 
+> **Note:** Demo shows `scan` command. `audit` and `map` commands are new additions not yet in the demo.
+
 ---
 
 ## What Makes This Different
@@ -226,10 +228,17 @@ nexora scan workflows --path ./ --format ocsf
 ### GitHub Actions
 
 ```yaml
+- name: Install nexora-cli
+  run: |
+    bash -c "$(curl -sSfL https://raw.githubusercontent.com/Nexora-NHI/nexora-cli/main/scripts/install.sh)"
+
 - name: Scan NHI risks
-  uses: Nexora-NHI/nexora-action@v1
+  run: nexora scan workflows --path .github/workflows/ --format sarif --output nexora.sarif
+
+- name: Upload to Code Scanning
+  uses: github/codeql-action/upload-sarif@v3
   with:
-    scan-path: .github/workflows/
+    sarif_file: nexora.sarif
 ```
 
 ### GitLab CI
@@ -249,17 +258,26 @@ nhi-scan:
 
 ## Research
 
-We scanned 50 popular GitHub repos. Results:
-- **94%** had at least one NHI misconfiguration
-- **83%** had workflow-level write permissions (should be job-scoped)
-- **68%** had unpinned actions (supply chain risk)
+We scanned 32 popular open-source repos (18 in batch 1, 14 in batch 2). Real findings:
 
-Security tools included:
+**Batch 1 (18 repos):** 823 total findings
+- 83% had workflow-level write permissions (should be job-scoped)
+- 50% had unpinned actions
+- Worst offenders: grafana/grafana (291), facebook/react (165), vercel/next.js (126)
+- Clean repos: cert-manager, OPA
+
+**Batch 2 (14 repos):** 267 total findings
+- 94% unpinned actions
+- 5% workflow-level permissions
+- Worst offenders: actions/runner (57), golangci-lint (41), nektos/act (39)
+- Clean repo: traefik
+
+Security tools scanned:
 - trufflesecurity/trufflehog: 35 findings
-- aquasecurity/trivy: 41 findings
-- gitleaks/gitleaks: 28 findings
+- aquasecurity/tfsec: 30 findings
+- github/super-linter: 31 findings
 
-[Full research writeup →](docs/research/ci-cd-nhi-scan-2026.md)
+[Batch 1 research →](docs/research/ci-cd-nhi-scan-2026.md) | [Batch 2 research →](docs/research/ci-cd-nhi-scan-2026-batch2.md)
 
 ---
 
